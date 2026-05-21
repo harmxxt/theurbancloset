@@ -121,3 +121,7 @@ STORE_PHONE = config('STORE_PHONE', default='+1 (555) 123-4567')
 STORE_EMAIL = config('STORE_EMAIL', default='contact@theurbancloset.com')
 TAX_RATE = config('TAX_RATE', default=0.18, cast=float)
 DELIVERY_CHARGE = config('DELIVERY_CHARGE', default=99, cast=int)
+
+import dj_database_url
+if DATABASE_URL := os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
