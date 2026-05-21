@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}TheUrbanCloset — Luxury Redefined{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ---- HERO ---- */
+.hero-section {
+    min-height: 92vh;
+    background: var(--black);
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, #0a0a0a 0%, #1a1a1a 40%, #2a2520 100%);
+}
+
+.hero-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(201,169,110,0.06) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(201,169,110,0.04) 0%, transparent 40%);
+}
+
+.hero-line-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    opacity: 0.4;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 80px 0;
+}
+
+.hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+}
+
+.hero-title em {
+    font-style: italic;
+    color: var(--gold);
+}
+
+.hero-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    max-width: 420px;
+    line-height: 1.8;
+    margin: 24px 0 40px;
+    letter-spacing: 0.03em;
+}
+
+.hero-cta-group { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+.hero-scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    z-index: 2;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+}
+
+.hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-stat-number {
+    font-family: var(--font-display);
+    font-size: 36px;
+    color: var(--gold);
+    font-weight: 300;
+    line-height: 1;
+}
+
+.hero-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+}
+
+/* Hero image panel */
+.hero-img-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 45%;
+    overflow: hidden;
+}
+
+.hero-img-panel::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    background: linear-gradient(to right, var(--black), transparent);
+    z-index: 1;
+}
+
+.hero-img-panel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7) saturate(0.9);
+}
+
+/* ---- CATEGORIES ROW ---- */
+.category-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: 1px solid rgba(0,0,0,0.12);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    transition: var(--transition);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.category-pill:hover {
+    background: var(--black);
+    color: var(--gold);
+    border-color: var(--black);
+}
+
+/* ---- FEATURE STRIP ---- */
+.feature-strip {
+    background: var(--beige);
+    padding: 28px 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+}
+
+.feature-icon {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.feature-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.feature-desc {
+    font-size: 11px;
+    color: var(--mid-gray);
+    letter-spacing: 0.03em;
+}
+
+/* ---- MARQUEE ---- */
+.marquee-wrapper {
+    background: var(--gold);
+    padding: 12px 0;
+    overflow: hidden;
+}
+
+.marquee-track {
+    display: flex;
+    gap: 60px;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+}
+
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.marquee-item {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.marquee-dot { width: 4px; height: 4px; background: var(--black); border-radius: 50%; }
+
+/* ---- BANNER STRIP ---- */
+.editorial-banner {
+    background: var(--black);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.editorial-banner::before {
+    content: '"';
+    position: absolute;
+    right: -40px;
+    top: -60px;
+    font-family: var(--font-display);
+    font-size: 400px;
+    color: rgba(201,169,110,0.04);
+    line-height: 1;
+    pointer-events: none;
+}
+
+.editorial-text {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 54px);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.3;
+    font-style: italic;
+}
+
+.editorial-text strong {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--gold);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO ===== -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-pattern"></div>
+    <div class="hero-line-left"></div>
+
+    <!-- Right image panel -->
+    <div class="hero-img-panel">
+        <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=900&q=80" alt="Luxury Fashion">
+    </div>
+
+    <div class="container hero-content">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="hero-eyebrow fade-in-up">TheUrbanCloset — Autumn / Winter 2025</div>
+                <h1 class="hero-title fade-in-up delay-1">
+                    Where Fabric<br>
+                    Meets <em>Soul.</em>
+                </h1>
+                <p class="hero-subtitle fade-in-up delay-2">
+                    TheUrbanCloset is a curated sanctuary of premium fashion — where every piece tells a story of craftsmanship, elegance, and identity.
+                </p>
+                <div class="hero-cta-group fade-in-up delay-3">
+                    <a href="{% url 'product_list' %}" class="btn-luxury-gold">Explore Collection</a>
+                    <a href="{% url 'category_products' 'women' %}" class="btn-luxury-outline" style="color:white; border-color: rgba(255,255,255,0.3)">Women's Edit</a>
+                </div>
+                <div class="hero-stats fade-in-up delay-4">
+                    <div>
+                        <div class="hero-stat-number">500+</div>
+                        <div class="hero-stat-label">Curated Pieces</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-number">12K+</div>
+                        <div class="hero-stat-label">Happy Clients</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-number">15+</div>
+                        <div class="hero-stat-label">Global Brands</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll-hint">
+        <span>Scroll</span>
+        <i class="bi bi-chevron-down"></i>
+    </div>
+</section>
+
+<!-- ===== MARQUEE ===== -->
+<div class="marquee-wrapper">
+    <div class="marquee-track">
+        <span class="marquee-item">New Arrivals<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Premium Fabrics<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Handcrafted Luxury<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Free Shipping Over ₹5000<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Exclusive Designs<span class="marquee-dot"></span></span>
+        <span class="marquee-item">New Arrivals<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Premium Fabrics<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Handcrafted Luxury<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Free Shipping Over ₹5000<span class="marquee-dot"></span></span>
+        <span class="marquee-item">Exclusive Designs<span class="marquee-dot"></span></span>
+    </div>
+</div>
+
+<!-- ===== CATEGORIES ===== -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <p class="section-subtitle">Explore By</p>
+            <h2 class="section-title">Shop Collections</h2>
+            <div class="gold-divider"></div>
+        </div>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            {% for category in categories %}
+            <a href="{{ category.get_absolute_url }}" class="category-pill">
+                <i class="bi bi-tag-fill" style="color:{{ category.color }}"></i>
+                {{ category.name }}
+            </a>
+            {% endfor %}
+            <a href="{% url 'product_list' %}" class="category-pill" style="background:var(--black); color:var(--gold); border-color:var(--black)">
+                <i class="bi bi-grid-3x3-gap-fill"></i> All
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURE STRIP ===== -->
+<div class="feature-strip">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-truck"></i></div>
+                    <div>
+                        <div class="feature-label">Free Shipping</div>
+                        <div class="feature-desc">On orders above ₹5,000</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="feature-label">Authentic Quality</div>
+                        <div class="feature-desc">100% genuine luxury fabrics</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-arrow-repeat"></i></div>
+                    <div>
+                        <div class="feature-label">Easy Returns</div>
+                        <div class="feature-desc">30-day hassle-free returns</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-headset"></i></div>
+                    <div>
+                        <div class="feature-label">24/7 Support</div>
+                        <div class="feature-desc">Dedicated fashion experts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FEATURED PRODUCTS ===== -->
+<section class="py-5 py-lg-6">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <p class="section-subtitle">The Finest Selection</p>
+                <h2 class="section-title mb-0">Featured Pieces</h2>
+                <div class="gold-divider-left"></div>
+            </div>
+            <a href="{% url 'product_list' %}" class="btn-luxury-outline d-none d-md-inline-block">View All</a>
+        </div>
+
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="product-card h-100">
+                    <div class="product-card-img-wrapper">
+                        <img src="{{ product.image_url }}"
+                             alt="{{ product.name }}"
+                             loading="lazy"
+                             onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=60'">
+                        {% if product.discount_price %}
+                        <span class="product-card-badge badge-sale">{{ product.get_discount_percent }}% OFF</span>
+                        {% else %}
+                        <span class="product-card-badge badge-new">New</span>
+                        {% endif %}
+                        <div class="product-card-overlay">
+                            <a href="{{ product.get_absolute_url }}" class="overlay-btn">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{% url 'add_to_cart' product.id %}" class="overlay-btn primary" onclick="this.closest('form') && this.closest('form').submit()">
+                                <i class="bi bi-bag-plus"></i> Add
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-category-label">{{ product.category.name }}</div>
+                        <a href="{{ product.get_absolute_url }}">
+                            <h3 class="product-name">{{ product.name }}</h3>
+                        </a>
+                        <div class="product-price-wrapper">
+                            <span class="product-price">₹{{ product.get_display_price|floatformat:"0" }}</span>
+                            {% if product.discount_price %}
+                            <span class="product-price-old">₹{{ product.price|floatformat:"0" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Run <code>python manage.py seed_products</code> to populate the store.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5 d-md-none">
+            <a href="{% url 'product_list' %}" class="btn-luxury-outline">View All Products</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== EDITORIAL BANNER ===== -->
+<section class="editorial-banner">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="section-subtitle" style="color:var(--gold)">Our Philosophy</p>
+                <p class="editorial-text">
+                    "Every garment is a conversation<br>
+                    between cloth and <strong>character.</strong><br>
+                    Dress accordingly."
+                </p>
+                <div class="gold-divider-left" style="margin-top:24px"></div>
+                <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-top:16px;">— The TheUrbanCloset Manifesto</p>
+                <a href="{% url 'product_list' %}" class="btn-luxury-gold mt-4 d-inline-block">Shop Now</a>
+            </div>
+            <div class="col-lg-5">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80"
+                     alt="Luxury Fashion Editorial"
+                     style="width:100%; aspect-ratio:4/5; object-fit:cover; filter:brightness(0.8) grayscale(0.2);">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== NEW ARRIVALS ===== -->
+{% if new_arrivals %}
+<section class="py-5 py-lg-6">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="section-subtitle">Just Landed</p>
+            <h2 class="section-title">New Arrivals</h2>
+            <div class="gold-divider"></div>
+        </div>
+        <div class="row g-4">
+            {% for product in new_arrivals %}
+            <div class="col-6 col-md-3">
+                <div class="product-card">
+                    <div class="product-card-img-wrapper">
+                        <img src="{{ product.image_url }}"
+                             alt="{{ product.name }}"
+                             loading="lazy"
+                             onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=60'">
+                        <span class="product-card-badge badge-new">New</span>
+                        <div class="product-card-overlay">
+                            <a href="{{ product.get_absolute_url }}" class="overlay-btn primary">
+                                <i class="bi bi-arrow-right"></i> Shop Now
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-category-label">{{ product.category.name }}</div>
+                        <a href="{{ product.get_absolute_url }}">
+                            <h3 class="product-name">{{ product.name }}</h3>
+                        </a>
+                        <div class="product-price-wrapper">
+                            <span class="product-price">₹{{ product.get_display_price|floatformat:"0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

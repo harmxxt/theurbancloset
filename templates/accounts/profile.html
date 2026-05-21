@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — TheUrbanCloset{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1>My Profile</h1></div></div>
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <div style="background:white; padding:36px; box-shadow:var(--shadow-sm);">
+                    <h4 class="font-display" style="font-size:24px; margin-bottom:24px;">Account Information</h4>
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            {% for field in form %}
+                            <div class="col-md-6">
+                                <label style="font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--dark-gray); display:block; margin-bottom:6px;">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}<div style="font-size:12px;color:#e74c3c;">{{ field.errors.0 }}</div>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn-luxury-gold mt-4">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div style="background:var(--beige); padding:28px;">
+                    <h5 class="font-display" style="font-size:20px; margin-bottom:16px;">Recent Orders</h5>
+                    {% for order in recent_orders %}
+                    <div style="border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <a href="{% url 'order_detail' order.order_number %}" style="font-size:13px; font-weight:600; color:var(--black);">
+                                {{ order.order_number }}
+                            </a>
+                            <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--mid-gray); margin:4px 0 0;">
+                            ₹{{ order.total_amount|floatformat:"0" }} · {{ order.created_at|date:"d M Y" }}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p style="font-size:13px; color:var(--mid-gray);">No orders yet.</p>
+                    {% endfor %}
+                    <a href="{% url 'order_history' %}" class="btn-luxury-outline d-block text-center mt-3" style="padding:10px;">View All Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

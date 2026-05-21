@@ -1,0 +1,9 @@
+build:
+  command: |
+    pip install -r requirements.txt
+    python manage.py collectstatic --noinput
+    python manage.py migrate
+    python manage.py seed_products
+  publishDirectory: staticfiles
+
+startCommand: gunicorn theurbancloset.wsgi:application

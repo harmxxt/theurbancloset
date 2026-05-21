@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — TheUrbanCloset{% endblock %}
+{% block content %}
+<section style="min-height:80vh; display:flex; align-items:center; background:var(--beige); padding:60px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-6 text-center">
+                <div style="background:white; padding:56px 40px; box-shadow:var(--shadow-md);">
+                    <div style="width:80px; height:80px; background:rgba(201,169,110,0.1); border:2px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+                        <i class="bi bi-check-lg" style="font-size:36px; color:var(--gold);"></i>
+                    </div>
+                    <h2 class="section-title" style="font-size:36px; margin-bottom:8px;">Order Placed!</h2>
+                    <p style="color:var(--mid-gray); font-size:14px; margin-bottom:24px;">
+                        Thank you for shopping with TheUrbanCloset. Your order has been confirmed.
+                    </p>
+                    <div style="background:var(--beige); padding:20px; margin-bottom:24px; text-align:left;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid-gray);">Order Number</span>
+                            <strong>{{ order.order_number }}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid-gray);">Total Amount</span>
+                            <strong>₹{{ order.total_amount|floatformat:"0" }}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid-gray);">Payment</span>
+                            <strong>{{ order.get_payment_method_display }}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--mid-gray);">Status</span>
+                            <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% if order.invoice %}
+                    <div style="background:rgba(201,169,110,0.08); border:1px solid rgba(201,169,110,0.3); padding:14px; margin-bottom:20px; font-size:13px; color:var(--dark-gray);">
+                        <i class="bi bi-envelope-check me-2" style="color:var(--gold);"></i>
+                        Invoice <strong>{{ order.invoice.invoice_number }}</strong> has been emailed to <strong>{{ order.email }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'order_detail' order.order_number %}" class="btn-luxury-gold">View Order Details</a>
+                        {% if order.invoice %}
+                        <a href="{% url 'download_invoice' order.invoice.invoice_number %}" class="btn-luxury-outline">
+                            <i class="bi bi-download me-1"></i>Download Invoice
+                        </a>
+                        {% endif %}
+                    </div>
+                    <p style="margin-top:20px;"><a href="{% url 'home' %}" style="font-size:12px; color:var(--mid-gray);">Continue Shopping</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

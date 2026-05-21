@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — TheUrbanCloset{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1>My Orders</h1></div></div>
+<section class="py-5">
+    <div class="container">
+        {% if orders %}
+        <div style="background:white; box-shadow:var(--shadow-sm);">
+            <table class="w-100" style="border-collapse:collapse;">
+                <thead>
+                    <tr style="background:var(--black); color:white;">
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Order #</th>
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Date</th>
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Items</th>
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Total</th>
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Status</th>
+                        <th style="padding:14px 20px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-weight:600;">Invoice</th>
+                        <th style="padding:14px 20px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr style="border-bottom:1px solid var(--light-gray);">
+                        <td style="padding:16px 20px; font-weight:600; font-size:13px;">{{ order.order_number }}</td>
+                        <td style="padding:16px 20px; font-size:13px; color:var(--mid-gray);">{{ order.created_at|date:"d M Y" }}</td>
+                        <td style="padding:16px 20px; font-size:13px;">{{ order.items.count }} item{{ order.items.count|pluralize }}</td>
+                        <td style="padding:16px 20px; font-size:14px; font-weight:700;">₹{{ order.total_amount|floatformat:"0" }}</td>
+                        <td style="padding:16px 20px;"><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td style="padding:16px 20px;">
+                            {% if order.invoice %}
+                            <a href="{% url 'download_invoice' order.invoice.invoice_number %}" style="font-size:12px; color:var(--gold); text-decoration:none;" title="Download Invoice">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Download
+                            </a>
+                            {% else %}
+                            <span style="font-size:12px; color:var(--mid-gray);">Generating...</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding:16px 20px;">
+                            <a href="{% url 'order_detail' order.order_number %}" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--black);">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:80px 0;">
+            <i class="bi bi-bag-x" style="font-size:56px; color:var(--light-gray); display:block; margin-bottom:16px;"></i>
+            <h3 class="font-display" style="font-size:28px;">No orders yet</h3>
+            <p style="color:var(--mid-gray); margin-bottom:24px;">Start shopping to see your orders here.</p>
+            <a href="{% url 'product_list' %}" class="btn-luxury-gold">Shop Now</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — TheUrbanCloset{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-img-main-wrapper {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    background: var(--light-gray);
+    cursor: zoom-in;
+}
+#mainProductImg {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.size-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: var(--transition);
+    background: white;
+    color: var(--black);
+    user-select: none;
+}
+.size-option:hover { border-color: var(--black); }
+.size-option.selected {
+    background: var(--black);
+    color: var(--gold);
+    border-color: var(--black);
+}
+.product-meta-table { width: 100%; }
+.product-meta-table td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 13px;
+}
+.product-meta-table td:first-child {
+    color: var(--mid-gray);
+    width: 120px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.stock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.stock-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+}
+.in-stock .stock-dot { background: #27ae60; }
+.low-stock .stock-dot { background: #f39c12; animation: pulse 1.5s infinite; }
+.out-stock .stock-dot { background: #e74c3c; }
+@keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+}
+.tabs-luxury .nav-link {
+    border: none; border-radius: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--mid-gray);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px 20px;
+    transition: var(--transition);
+}
+.tabs-luxury .nav-link.active,
+.tabs-luxury .nav-link:hover {
+    color: var(--black);
+    border-bottom-color: var(--gold);
+    background: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="padding: 40px 0 28px;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Products</a></li>
+                {% if product.category %}
+                <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- Product Images -->
+            <div class="col-lg-6">
+                <div class="product-img-main-wrapper">
+                    <img id="mainProductImg"
+                         src="{{ product.image_url }}"
+                         alt="{{ product.name }}"
+                         onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80'">
+                    {% if product.discount_price %}
+                    <span class="product-card-badge badge-sale" style="top:16px; left:16px;">{{ product.get_discount_percent }}% OFF</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <p class="section-subtitle mb-2">{{ product.category.name|default:"TheUrbanCloset" }}</p>
+                <h1 class="section-title" style="font-size: clamp(26px,3.5vw,42px);">{{ product.name }}</h1>
+                <p style="font-size:12px; color:var(--mid-gray); letter-spacing:0.1em; margin-bottom:16px;">
+                    SKU: LX-{{ product.id|stringformat:"05d" }} &nbsp;·&nbsp; Brand: {{ product.brand }}
+                </p>
+
+                <!-- Price -->
+                <div class="d-flex align-items-baseline gap-3 mb-4">
+                    <span style="font-family:var(--font-display); font-size:36px; font-weight:500;">
+                        ₹{{ product.get_display_price|floatformat:"0" }}
+                    </span>
+                    {% if product.discount_price %}
+                    <span style="font-size:20px; color:var(--mid-gray); text-decoration:line-through;">₹{{ product.price|floatformat:"0" }}</span>
+                    <span style="background:rgba(201,169,110,0.15); color:var(--gold-dark); font-size:12px; font-weight:700; padding:4px 10px;">
+                        You save ₹{{ product.get_savings|floatformat:"0" }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="gold-divider-left mb-4"></div>
+
+                <!-- Stock Status -->
+                <div class="mb-4">
+                    {% if product.stock == 0 %}
+                    <span class="stock-indicator out-stock"><span class="stock-dot"></span> Out of Stock</span>
+                    {% elif product.is_low_stock %}
+                    <span class="stock-indicator low-stock"><span class="stock-dot"></span> Low Stock — Only {{ product.stock }} left</span>
+                    {% else %}
+                    <span class="stock-indicator in-stock"><span class="stock-dot"></span> In Stock</span>
+                    {% endif %}
+                </div>
+
+                <!-- Add to Cart Form -->
+                {% if product.stock > 0 %}
+                <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="size" id="selectedSize" value="">
+
+                    <!-- Size Selection -->
+                    {% if sizes %}
+                    <div class="mb-4">
+                        <p style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:12px;">
+                            Select Size
+                            <span style="color:var(--gold); font-size:10px;" id="selectedSizeLabel"></span>
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for size in sizes %}
+                            <div class="size-option" data-size="{{ size }}" onclick="selectSize(this)">{{ size }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Quantity -->
+                    <div class="mb-4">
+                        <p style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:12px;">Quantity</p>
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn qty-minus">−</button>
+                            <input type="number" name="quantity" class="qty-input" value="1" min="1" max="{{ product.stock }}">
+                            <button type="button" class="qty-btn qty-plus">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button type="submit" class="btn-luxury-gold" style="flex:1; min-width:200px;">
+                            <i class="bi bi-bag-plus me-2"></i>Add to Cart
+                        </button>
+                        <a href="{% url 'checkout' %}" class="btn-luxury-outline" style="flex:0 0 auto; white-space:nowrap;">
+                            Buy Now
+                        </a>
+                    </div>
+                </form>
+                {% else %}
+                <div class="py-4 text-center" style="background:var(--light-gray); padding:24px;">
+                    <p style="font-size:13px; color:var(--mid-gray); margin:0;">This item is currently out of stock.</p>
+                </div>
+                {% endif %}
+
+                <!-- Product Meta -->
+                <div class="mt-4">
+                    <table class="product-meta-table">
+                        {% if product.material %}
+                        <tr>
+                            <td>Material</td>
+                            <td>{{ product.material }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>Category</td>
+                            <td>{{ product.category.name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <td>Available</td>
+                            <td>{{ product.stock }} units</td>
+                        </tr>
+                        <tr>
+                            <td>Delivery</td>
+                            <td>Free shipping above ₹5,000</td>
+                        </tr>
+                        <tr>
+                            <td>Returns</td>
+                            <td>30-day easy returns</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs: Description, Shipping, Size Guide -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <ul class="nav tabs-luxury border-bottom mb-4" id="productTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Description</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#shipping">Shipping & Returns</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sizeguide">Size Guide</button>
+                    </li>
+                </ul>
+                <div class="tab-content" style="max-width:700px;">
+                    <div class="tab-pane fade show active" id="desc">
+                        <p style="font-size:14px; line-height:1.9; color:var(--dark-gray);">{{ product.description }}</p>
+                        {% if product.material %}
+                        <p style="font-size:13px; color:var(--mid-gray); margin-top:12px;">
+                            <strong>Material:</strong> {{ product.material }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="shipping">
+                        <p style="font-size:14px; line-height:1.9; color:var(--dark-gray);">
+                            <strong>Free Shipping</strong> on orders above ₹5,000.<br>
+                            Standard delivery: 3–5 business days.<br>
+                            Express delivery: 1–2 business days (additional charges apply).<br><br>
+                            <strong>Returns:</strong> We accept returns within 30 days of delivery. Items must be unworn, unwashed, and with all original tags attached.
+                        </p>
+                    </div>
+                    <div class="tab-pane fade" id="sizeguide">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" style="font-size:12px;">
+                                <thead style="background:var(--black); color:white;">
+                                    <tr><th>Size</th><th>Chest (in)</th><th>Waist (in)</th><th>Hip (in)</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>XS</td><td>32–34</td><td>26–28</td><td>34–36</td></tr>
+                                    <tr><td>S</td><td>34–36</td><td>28–30</td><td>36–38</td></tr>
+                                    <tr><td>M</td><td>36–38</td><td>30–32</td><td>38–40</td></tr>
+                                    <tr><td>L</td><td>38–40</td><td>32–34</td><td>40–42</td></tr>
+                                    <tr><td>XL</td><td>40–42</td><td>34–36</td><td>42–44</td></tr>
+                                    <tr><td>XXL</td><td>42–44</td><td>36–38</td><td>44–46</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        {% if related_products %}
+        <div class="mt-5 pt-3">
+            <h3 class="section-title mb-1">You May Also Like</h3>
+            <div class="gold-divider-left mb-4"></div>
+            <div class="row g-4">
+                {% for rp in related_products %}
+                <div class="col-6 col-md-3">
+                    <div class="product-card">
+                        <div class="product-card-img-wrapper">
+                            <img src="{{ rp.image_url }}" alt="{{ rp.name }}" loading="lazy"
+                                 onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60'">
+                            <div class="product-card-overlay">
+                                <a href="{{ rp.get_absolute_url }}" class="overlay-btn primary">View Product</a>
+                            </div>
+                        </div>
+                        <div class="product-card-body">
+                            <div class="product-category-label">{{ rp.category.name }}</div>
+                            <a href="{{ rp.get_absolute_url }}"><h3 class="product-name">{{ rp.name }}</h3></a>
+                            <div class="product-price-wrapper">
+                                <span class="product-price">₹{{ rp.get_display_price|floatformat:"0" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectSize(el) {
+    document.querySelectorAll('.size-option').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('selectedSize').value = el.dataset.size;
+    document.getElementById('selectedSizeLabel').textContent = ' — ' + el.dataset.size;
+}
+</script>
+{% endblock %}

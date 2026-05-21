@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Order {{ order.order_number }} — TheUrbanCloset{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container">
+    <h1>Order Details</h1>
+    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:6px;">{{ order.order_number }}</p>
+</div></div>
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <!-- Items -->
+                <div style="background:white; padding:28px; box-shadow:var(--shadow-sm); margin-bottom:24px;">
+                    <h5 class="font-display" style="font-size:22px; margin-bottom:20px;">Order Items</h5>
+                    {% for item in items %}
+                    <div style="display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--light-gray); align-items:center;">
+                        <div style="flex:1;">
+                            <p style="font-size:14px; font-weight:600; margin:0 0 4px;">{{ item.product_name }}</p>
+                            <p style="font-size:12px; color:var(--mid-gray); margin:0;">
+                                Qty: {{ item.quantity }} {% if item.size %}· Size: {{ item.size }}{% endif %}
+                                · ₹{{ item.product_price|floatformat:"0" }} each
+                            </p>
+                        </div>
+                        <strong style="font-size:15px;">₹{{ item.get_subtotal|floatformat:"0" }}</strong>
+                    </div>
+                    {% endfor %}
+                    <!-- Totals -->
+                    <div style="margin-top:16px;">
+                        <div class="summary-row"><span style="font-size:13px;">Subtotal</span><span>₹{{ order.subtotal|floatformat:"0" }}</span></div>
+                        <div class="summary-row"><span style="font-size:13px;">Tax (18% GST)</span><span>₹{{ order.tax_amount|floatformat:"0" }}</span></div>
+                        <div class="summary-row"><span style="font-size:13px;">Delivery</span><span>₹{{ order.delivery_charge|floatformat:"0" }}</span></div>
+                        <div class="summary-total"><span>Total</span><span>₹{{ order.total_amount|floatformat:"0" }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div style="background:white; padding:28px; box-shadow:var(--shadow-sm);">
+                    <h5 class="font-display" style="font-size:22px; margin-bottom:16px;">Shipping Address</h5>
+                    <p style="font-size:14px; line-height:1.8; color:var(--dark-gray); margin:0;">
+                        <strong>{{ order.full_name }}</strong><br>
+                        {{ order.address_line1 }}<br>
+                        {% if order.address_line2 %}{{ order.address_line2 }}<br>{% endif %}
+                        {{ order.city }}, {{ order.state }} — {{ order.postal_code }}<br>
+                        {{ order.country }}<br>
+                        <i class="bi bi-telephone me-1" style="color:var(--gold);"></i>{{ order.phone }}<br>
+                        <i class="bi bi-envelope me-1" style="color:var(--gold);"></i>{{ order.email }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right: Status + Invoice -->
+            <div class="col-lg-4">
+                <div style="background:var(--beige); padding:28px; margin-bottom:20px;">
+                    <h5 class="font-display" style="font-size:20px; margin-bottom:16px;">Order Status</h5>
+                    <table class="w-100" style="font-size:13px;">
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.08);">
+                            <td style="padding:8px 0; color:var(--mid-gray);">Order Status</td>
+                            <td style="padding:8px 0; text-align:right;"><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.08);">
+                            <td style="padding:8px 0; color:var(--mid-gray);">Payment</td>
+                            <td style="padding:8px 0; text-align:right;">{{ order.get_payment_method_display }}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.08);">
+                            <td style="padding:8px 0; color:var(--mid-gray);">Payment Status</td>
+                            <td style="padding:8px 0; text-align:right;"><span class="status-badge status-{{ order.payment_status }}">{{ order.get_payment_status_display }}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px 0; color:var(--mid-gray);">Placed On</td>
+                            <td style="padding:8px 0; text-align:right;">{{ order.created_at|date:"d M Y" }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                {% if order.invoice %}
+                <div style="background:white; padding:24px; border:1px solid rgba(201,169,110,0.3); box-shadow:var(--shadow-sm);">
+                    <h5 class="font-display" style="font-size:18px; margin-bottom:12px;">
+                        <i class="bi bi-file-earmark-pdf me-2" style="color:var(--gold);"></i>Invoice
+                    </h5>
+                    <p style="font-size:12px; color:var(--mid-gray); margin-bottom:16px;">
+                        Invoice #{{ order.invoice.invoice_number }}<br>
+                        Issued: {{ order.invoice.issued_date|date:"d M Y" }}
+                    </p>
+                    <a href="{% url 'download_invoice' order.invoice.invoice_number %}" class="btn-luxury-gold d-block text-center" style="padding:12px;">
+                        <i class="bi bi-download me-2"></i>Download Invoice PDF
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <a href="{% url 'order_history' %}" style="font-size:12px; color:var(--mid-gray); text-transform:uppercase; letter-spacing:0.08em;">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

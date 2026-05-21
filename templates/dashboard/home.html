@@ -1,0 +1,265 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Business Dashboard — TheUrbanCloset{% endblock %}
+{% block page_title %}Business Dashboard{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards Row 1 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-bag-check"></i></div>
+            <div class="stat-value">{{ total_orders }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="bi bi-currency-rupee"></i></div>
+            <div class="stat-value">₹{{ total_revenue|floatformat:"0" }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card orange">
+            <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value">{{ pending_orders }}</div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{ paid_orders }}</div>
+            <div class="stat-label">Paid Orders</div>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards Row 2 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-calendar-month"></i></div>
+            <div class="stat-value">{{ this_month_orders }}</div>
+            <div class="stat-label">This Month's Orders</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-value">₹{{ this_month_revenue|floatformat:"0" }}</div>
+            <div class="stat-label">This Month Revenue</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card red">
+            <div class="stat-icon red"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-value">₹{{ total_expenses|floatformat:"0" }}</div>
+            <div class="stat-label">Total Expenses</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card {% if net_profit >= 0 %}green{% else %}red{% endif %}">
+            <div class="stat-icon {% if net_profit >= 0 %}green{% else %}red{% endif %}">
+                <i class="bi bi-{% if net_profit >= 0 %}trending-up{% else %}trending-down{% endif %}"></i>
+            </div>
+            <div class="stat-value">₹{{ net_profit|floatformat:"0" }}</div>
+            <div class="stat-label">Net Profit</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Monthly Revenue Chart -->
+    <div class="col-lg-8">
+        <div class="chart-card" style="height:100%;">
+            <div class="chart-card-title">Monthly Revenue & Orders (Last 6 Months)</div>
+            <canvas id="revenueChart" height="90"></canvas>
+        </div>
+    </div>
+    <!-- Order Status Donut -->
+    <div class="col-lg-4">
+        <div class="chart-card" style="height:100%;">
+            <div class="chart-card-title">Order Status Distribution</div>
+            <canvas id="statusChart" height="170"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders + Low Stock -->
+<div class="row g-4">
+    <!-- Recent Orders -->
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="chart-card-title mb-0">Recent Orders</div>
+                <a href="/admin/orders/order/" style="font-size:11px; color:var(--gold);">View All →</a>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><strong style="color:var(--gold);">{{ order.order_number }}</strong></td>
+                            <td>{{ order.full_name }}</td>
+                            <td><strong>₹{{ order.total_amount|floatformat:"0" }}</strong></td>
+                            <td>
+                                <span style="font-size:10px; padding:3px 8px; font-weight:600; text-transform:uppercase;
+                                    background:{% if order.payment_status == 'paid' %}rgba(39,174,96,0.12); color:#27ae60;{% else %}rgba(243,156,18,0.12); color:#f39c12;{% endif %}">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="font-size:10px; padding:3px 8px; font-weight:600; text-transform:uppercase;
+                                    background:rgba(201,169,110,0.12); color:#8B6914;">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="color:#888;">{{ order.created_at|date:"d M" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" style="text-align:center; color:#888; padding:24px;">No orders yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="chart-card-title mb-0">⚠ Low Stock Alert</div>
+                <a href="{% url 'inventory_management' %}" style="font-size:11px; color:var(--gold);">Manage →</a>
+            </div>
+            {% for product in low_stock_products %}
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f5f5f5;">
+                <div>
+                    <p style="font-size:12px; font-weight:600; margin:0 0 2px;">{{ product.name|truncatechars:30 }}</p>
+                    <p style="font-size:11px; color:#888; margin:0;">{{ product.category.name }}</p>
+                </div>
+                <span style="font-size:12px; font-weight:700; padding:4px 10px;
+                    background:{% if product.stock == 0 %}rgba(231,76,60,0.1); color:#e74c3c;{% else %}rgba(243,156,18,0.1); color:#f39c12;{% endif %}">
+                    {{ product.stock }} left
+                </span>
+            </div>
+            {% empty %}
+            <p style="color:#888; font-size:13px; text-align:center; padding:20px 0;">All products are well stocked ✓</p>
+            {% endfor %}
+        </div>
+
+        <!-- Recent Expenses -->
+        <div class="chart-card mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="chart-card-title mb-0">Recent Expenses</div>
+                <a href="{% url 'expense_list' %}" style="font-size:11px; color:var(--gold);">View All →</a>
+            </div>
+            {% for expense in recent_expenses %}
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px;">
+                <div>
+                    <p style="margin:0; font-weight:600;">{{ expense.title|truncatechars:24 }}</p>
+                    <p style="margin:0; color:#888;">{{ expense.date|date:"d M Y" }}</p>
+                </div>
+                <span style="font-weight:700; color:#e74c3c;">₹{{ expense.amount|floatformat:"0" }}</span>
+            </div>
+            {% empty %}
+            <p style="color:#888; font-size:13px; text-align:center; padding:16px 0;">No expenses recorded</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ---- Revenue & Orders Chart ----
+const revenueCtx = document.getElementById('revenueChart');
+if (revenueCtx) {
+    new Chart(revenueCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [
+                {
+                    label: 'Revenue (₹)',
+                    data: {{ chart_revenue|safe }},
+                    backgroundColor: 'rgba(201,169,110,0.7)',
+                    borderColor: '#C9A96E',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Orders',
+                    data: {{ chart_orders|safe }},
+                    type: 'line',
+                    borderColor: '#1A1A1A',
+                    backgroundColor: 'rgba(26,26,26,0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#1A1A1A',
+                    pointRadius: 4,
+                    tension: 0.3,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'top', labels: { font: { family: 'Montserrat', size: 11 } } } },
+            scales: {
+                y: {
+                    type: 'linear', position: 'left',
+                    ticks: { callback: v => '₹' + v.toLocaleString('en-IN'), font: { size: 10 } }
+                },
+                y1: {
+                    type: 'linear', position: 'right', grid: { drawOnChartArea: false },
+                    ticks: { font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+
+// ---- Status Donut ----
+const statusCtx = document.getElementById('statusChart');
+if (statusCtx) {
+    const rawStatus = {{ status_counts|safe }};
+    const statusLabels = Object.keys(rawStatus).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+    const statusValues = Object.values(rawStatus);
+    const statusColors = ['#f39c12','#3498db','#9b59b6','#C9A96E','#27ae60','#e74c3c'];
+    if (statusValues.length > 0) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{ data: statusValues, backgroundColor: statusColors, borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 10 }, padding: 10 } }
+                },
+                cutout: '60%'
+            }
+        });
+    } else {
+        statusCtx.closest('.chart-card').innerHTML += '<p style="text-align:center;color:#888;font-size:13px;padding:40px 0;">No orders yet</p>';
+    }
+}
+</script>
+{% endblock %}

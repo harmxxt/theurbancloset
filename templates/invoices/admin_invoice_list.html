@@ -1,0 +1,65 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Invoices — TheUrbanCloset{% endblock %}
+{% block page_title %}Invoice Management{% endblock %}
+
+{% block content %}
+<div class="chart-card">
+    <div class="chart-card-title">All Invoices</div>
+    <div style="overflow-x:auto;">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>PDF</th>
+                    
+                    <th>Email</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td><strong style="color:var(--gold);">{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.order.order_number }}</td>
+                    <td>{{ invoice.order.full_name }}</td>
+                    <td><strong>₹{{ invoice.order.total_amount|floatformat:"0" }}</strong></td>
+                    <td><span class="badge-gold">{{ invoice.get_status_display }}</span></td>
+                    <td>
+                        {% if invoice.pdf_generated %}
+                        <i class="bi bi-check-circle-fill" style="color:#27ae60;" title="PDF Generated"></i>
+                        {% else %}
+                        <i class="bi bi-x-circle" style="color:#e74c3c;" title="Not Generated"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        {% if invoice.email_sent %}
+                        <i class="bi bi-envelope-check-fill" style="color:#27ae60;" title="Email Sent"></i>
+                        {% else %}
+                        <i class="bi bi-envelope-x" style="color:#e74c3c;" title="Not Sent"></i>
+                        {% endif %}
+                    </td>
+                    <td style="color:#888; font-size:11px;">{{ invoice.issued_date|date:"d M Y" }}</td>
+                    <td style="white-space:nowrap;">
+                        <a href="{% url 'download_invoice' invoice.invoice_number %}" style="font-size:11px; color:var(--gold); margin-right:8px;" title="Download">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        <a href="{% url 'manually_create_invoice' invoice.order.id %}" style="font-size:11px; color:#3498db;" title="Regenerate">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" style="text-align:center; padding:40px; color:#888;">No invoices yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

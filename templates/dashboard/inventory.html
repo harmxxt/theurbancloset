@@ -1,0 +1,99 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Inventory — TheUrbanCloset{% endblock %}
+{% block page_title %}Inventory Management{% endblock %}
+{% block nav_inventory %}active{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ products.count }}</div>
+            <div class="stat-label">Total Products</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card orange">
+            <div class="stat-value">{{ low_stock_count }}</div>
+            <div class="stat-label">Low Stock (≤5)</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card red">
+            <div class="stat-value">{{ out_of_stock_count }}</div>
+            <div class="stat-label">Out of Stock</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card green">
+            <div class="stat-value">{{ categories.count }}</div>
+            <div class="stat-label">Categories</div>
+        </div>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="chart-card-title mb-0">All Products — Stock Levels</div>
+        <a href="/admin/products/product/add/" class="btn btn-sm" style="background:var(--gold); color:var(--black); border-radius:0; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px;">
+            + Add Product
+        </a>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="{{ product.image_url }}" alt=""
+                                 style="width:40px; height:50px; object-fit:cover;"
+                                 onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&q=40'">
+                            <span style="font-weight:600; font-size:12px;">{{ product.name }}</span>
+                        </div>
+                    </td>
+                    <td>{{ product.category.name|default:"—" }}</td>
+                    <td>
+                        ₹{{ product.get_display_price|floatformat:"0" }}
+                        {% if product.discount_price %}<br><span style="color:#888;text-decoration:line-through;font-size:11px;">₹{{ product.price|floatformat:"0" }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <strong style="font-size:14px; color:{% if product.stock == 0 %}#e74c3c{% elif product.stock <= 5 %}#f39c12{% else %}#27ae60{% endif %}">
+                            {{ product.stock }}
+                        </strong>
+                    </td>
+                    <td>
+                        {% if product.stock == 0 %}
+                        <span style="font-size:10px; padding:3px 8px; background:rgba(231,76,60,0.1); color:#e74c3c; font-weight:600; text-transform:uppercase;">Out of Stock</span>
+                        {% elif product.stock <= 5 %}
+                        <span style="font-size:10px; padding:3px 8px; background:rgba(243,156,18,0.1); color:#f39c12; font-weight:600; text-transform:uppercase;">Low Stock</span>
+                        {% else %}
+                        <span style="font-size:10px; padding:3px 8px; background:rgba(39,174,96,0.1); color:#27ae60; font-weight:600; text-transform:uppercase;">In Stock</span>
+                        {% endif %}
+                        {% if not product.is_active %}
+                        <span style="font-size:10px; padding:3px 8px; background:rgba(0,0,0,0.06); color:#888; font-weight:600; text-transform:uppercase; margin-left:4px;">Hidden</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin/products/product/{{ product.id }}/change/" style="font-size:11px; color:var(--gold); text-decoration:none; font-weight:600;">Edit</a>
+                        &nbsp;·&nbsp;
+                        <a href="{{ product.get_absolute_url }}" target="_blank" style="font-size:11px; color:#888; text-decoration:none;">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center; padding:40px; color:#888;">No products found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

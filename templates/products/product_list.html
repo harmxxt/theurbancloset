@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static product_tags %}
+
+{% block title %}
+  {% if selected_category %}{{ selected_category.name }} — {% endif %}Shop All — TheUrbanCloset
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.filter-sidebar { position: sticky; top: 100px; }
+.filter-heading {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--mid-gray); margin-bottom: 12px; font-weight: 600;
+}
+.cat-filter-link {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; font-size: 13px; color: var(--dark-gray);
+    border-bottom: 1px solid var(--light-gray);
+    transition: var(--transition); text-decoration: none;
+}
+.cat-filter-link:hover { color: var(--black); padding-left: 5px; }
+.cat-filter-link.active { color: var(--gold); font-weight: 600; }
+.cat-count {
+    font-size: 11px; color: var(--mid-gray);
+    background: var(--light-gray); padding: 1px 7px; border-radius: 20px;
+}
+.cat-filter-link.active .cat-count {
+    background: rgba(201,169,110,0.15); color: var(--gold-dark);
+}
+.sort-select {
+    border: 1px solid #ddd; border-radius: 0; font-size: 12px;
+    padding: 8px 12px; color: var(--black); background: var(--white);
+    cursor: pointer; outline: none;
+}
+.sort-select:focus { border-color: var(--gold); }
+.no-products { text-align: center; padding: 80px 0; }
+.no-products i { font-size: 56px; color: #e8e8e8; display: block; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                {% if selected_category %}
+                    <li class="breadcrumb-item"><a href="{% url 'product_list' %}">All Products</a></li>
+                    <li class="breadcrumb-item active">{{ selected_category.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item active">All Products</li>
+                {% endif %}
+            </ol>
+        </nav>
+        <h1>
+            {% if selected_category %}{{ selected_category.name }}
+            {% elif query %}Results for "{{ query }}"
+            {% else %}All Collections{% endif %}
+        </h1>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- ── Sidebar ── -->
+            <div class="col-lg-2 d-none d-lg-block">
+                <div class="filter-sidebar">
+                    <p class="filter-heading">Browse By</p>
+
+                    <!-- All products -->
+                    <a href="{% url 'product_list' %}"
+                       class="cat-filter-link {% if not selected_category and not query %}active{% endif %}">
+                        All Products
+                        <span class="cat-count">{{ total_count }}</span>
+                    </a>
+
+                    <!-- Each category with accurate count -->
+                    {% for cat in categories %}
+                    <a href="{% url 'category_products' cat.slug %}"
+                       class="cat-filter-link {% if selected_category.slug == cat.slug %}active{% endif %}">
+                        {{ cat.name }}
+                        <span class="cat-count">{{ counts|get_count:cat.slug }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ── Product Grid ── -->
+            <div class="col-lg-10">
+
+                <!-- Top bar -->
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+
+                    <!-- Mobile category select -->
+                    <div class="d-lg-none w-100">
+                        <select class="sort-select w-100" onchange="window.location=this.value">
+                            <option value="{% url 'product_list' %}">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{% url 'category_products' cat.slug %}"
+                                {% if selected_category.slug == cat.slug %}selected{% endif %}>
+                                {{ cat.name }} ({{ counts|get_count:cat.slug }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <form action="{% url 'product_list' %}" method="GET" class="d-flex gap-2">
+                        <input type="text" name="q" value="{{ query|default:'' }}"
+                               class="luxury-input"
+                               style="width:220px; padding:8px 14px!important; font-size:13px!important;"
+                               placeholder="Search products...">
+                        <button type="submit" class="btn-luxury" style="padding:8px 18px; font-size:12px;">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+
+                    <!-- Count + Sort -->
+                    <div class="d-flex align-items-center gap-3 ms-auto">
+                        <span style="font-size:12px; color:var(--mid-gray);">
+                            {{ products|length }} item{{ products|length|pluralize }}
+                        </span>
+                        <form method="GET" id="sortForm">
+                            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+                            <select name="sort" class="sort-select"
+                                    onchange="document.getElementById('sortForm').submit()">
+                                <option value="newest"     {% if sort == 'newest'     %}selected{% endif %}>Newest</option>
+                                <option value="price_low"  {% if sort == 'price_low'  %}selected{% endif %}>Price: Low → High</option>
+                                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                                <option value="name"       {% if sort == 'name'       %}selected{% endif %}>Name A–Z</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                {% if products %}
+                <div class="row g-4">
+                    {% for product in products %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <div class="product-card h-100">
+                            <div class="product-card-img-wrapper">
+                                <img src="{{ product.image_url }}"
+                                     alt="{{ product.name }}"
+                                     loading="lazy"
+                                     onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=60'">
+
+                                {% if product.discount_price %}
+                                <span class="product-card-badge badge-sale">{{ product.get_discount_percent }}% OFF</span>
+                                {% endif %}
+
+                                {% if product.stock == 0 %}
+                                <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);
+                                            display:flex;align-items:center;justify-content:center;">
+                                    <span style="color:white;font-size:12px;letter-spacing:0.1em;
+                                                 text-transform:uppercase;font-weight:600;">Sold Out</span>
+                                </div>
+                                {% else %}
+                                <div class="product-card-overlay">
+                                    <a href="{{ product.get_absolute_url }}" class="overlay-btn">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <form action="{% url 'add_to_cart' product.id %}" method="POST" style="flex:1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="overlay-btn primary w-100">
+                                            <i class="bi bi-bag-plus"></i> Add
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="product-card-body">
+                                <div class="product-category-label">{{ product.category.name }}</div>
+                                <a href="{{ product.get_absolute_url }}">
+                                    <h3 class="product-name">{{ product.name }}</h3>
+                                </a>
+                                <div class="product-price-wrapper">
+                                    <span class="product-price">₹{{ product.get_display_price|floatformat:"0" }}</span>
+                                    {% if product.discount_price %}
+                                    <span class="product-price-old">₹{{ product.price|floatformat:"0" }}</span>
+                                    <span class="product-discount-tag">{{ product.get_discount_percent }}% off</span>
+                                    {% endif %}
+                                </div>
+                                {% if product.is_low_stock and product.stock > 0 %}
+                                <p style="font-size:11px;color:#e74c3c;margin-top:4px;">
+                                    <i class="bi bi-exclamation-triangle"></i> Only {{ product.stock }} left
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <!-- Empty state -->
+                <div class="no-products">
+                    <i class="bi bi-bag-x"></i>
+                    <h3 class="font-display" style="font-size:28px; margin-bottom:10px;">No products found</h3>
+                    <p style="color:var(--mid-gray); margin-bottom:28px;">
+                        {% if query %}
+                            No results for "{{ query }}". Try a different term.
+                        {% else %}
+                            This category has no products yet. Check back soon.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'product_list' %}" class="btn-luxury">Browse All Products</a>
+                </div>
+                {% endif %}
+
+            </div><!-- /col -->
+        </div><!-- /row -->
+    </div>
+</section>
+{% endblock %}

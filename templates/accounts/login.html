@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — TheUrbanCloset{% endblock %}
+{% block content %}
+<div style="min-height:80vh; background:var(--beige); display:flex; align-items:center; padding:60px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div style="background:white; padding:48px 40px; box-shadow:var(--shadow-md);">
+                    <div class="text-center mb-4">
+                        <div class="footer-brand justify-content-center mb-3">
+                            <span class="brand-lt">VL</span>
+                            <span class="brand-name" style="color:var(--black);">TheUrbanCloset</span>
+                        </div>
+                        <h2 class="section-title" style="font-size:28px;">Welcome Back</h2>
+                        <p style="font-size:12px; color:var(--mid-gray); letter-spacing:0.08em; text-transform:uppercase;">Sign in to continue</p>
+                        <div class="gold-divider"></div>
+                    </div>
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label style="font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--dark-gray);">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div style="font-size:12px; color:#e74c3c; margin-top:4px;">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn-luxury w-100 mt-2" style="padding:14px; background:var(--black); color:white; border:2px solid var(--black);">
+                            Sign In
+                        </button>
+                    </form>
+                    <p class="text-center mt-4" style="font-size:13px; color:var(--mid-gray);">
+                        New to TheUrbanCloset? <a href="{% url 'register' %}" style="color:var(--gold); font-weight:600;">Create Account</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

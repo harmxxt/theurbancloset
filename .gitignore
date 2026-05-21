@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+.venv
+venv/
+env/
+ENV/
+
+# Firebase credentials (NEVER commit!)
+firebase-credentials.json
+*.json.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Migrations (keep these — commit them!)
+# !*/migrations/
+
+# Render / Heroku
+.render/

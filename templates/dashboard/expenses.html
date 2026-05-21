@@ -1,0 +1,62 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Expenses — TheUrbanCloset{% endblock %}
+{% block page_title %}Expense Tracking{% endblock %}
+{% block nav_expenses %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-card-title">Add New Expense</div>
+            <form method="POST" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label style="font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#555; display:block; margin-bottom:4px;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div style="font-size:11px; color:#e74c3c;">{{ field.errors.0 }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-sm w-100" style="background:var(--gold); color:var(--black); border-radius:0; font-weight:600; padding:10px; letter-spacing:0.08em; text-transform:uppercase; font-size:11px;">
+                    Add Expense
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="chart-card-title mb-0">All Expenses</div>
+                <strong style="font-size:14px; color:#e74c3c;">Total: ₹{{ total|floatformat:"0" }}</strong>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="dash-table">
+                    <thead><tr><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Added By</th><th></th></tr></thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td><strong>{{ expense.title }}</strong><br><small style="color:#888;">{{ expense.description|truncatechars:40 }}</small></td>
+                            <td><span class="badge-gold">{{ expense.get_category_display }}</span></td>
+                            <td><strong style="color:#e74c3c;">₹{{ expense.amount|floatformat:"0" }}</strong></td>
+                            <td style="color:#888;">{{ expense.date|date:"d M Y" }}</td>
+                            <td style="color:#888;">{{ expense.added_by.username|default:"—" }}</td>
+                            <td>
+                                <form action="{% url 'expense_delete' expense.pk %}" method="POST" onsubmit="return confirm('Delete this expense?')">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:14px;" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" style="text-align:center; padding:40px; color:#888;">No expenses recorded yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

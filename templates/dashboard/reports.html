@@ -1,0 +1,82 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Reports — TheUrbanCloset{% endblock %}
+{% block page_title %}Revenue & Expense Reports{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="chart-card mb-4">
+    <div class="chart-card-title">Monthly Financial Report</div>
+    <div style="overflow-x:auto;">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                    <th>Expenses</th>
+                    <th>Net Profit</th>
+                    <th>Margin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report_data %}
+                <tr>
+                    <td><strong>{{ row.month|date:"F Y" }}</strong></td>
+                    <td>{{ row.orders }}</td>
+                    <td style="color:#27ae60; font-weight:600;">₹{{ row.revenue|floatformat:"0" }}</td>
+                    <td style="color:#e74c3c; font-weight:600;">₹{{ row.expenses|floatformat:"0" }}</td>
+                    <td style="font-weight:700; color:{% if row.profit >= 0 %}#27ae60{% else %}#e74c3c{% endif %}">
+                        ₹{{ row.profit|floatformat:"0" }}
+                    </td>
+                    <td>
+                        {% if row.revenue %}
+                        {% widthratio row.profit row.revenue 100 %}%
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center;padding:40px;color:#888;">No report data available yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Revenue vs Expense Bar Chart -->
+{% if report_data %}
+<div class="chart-card">
+    <div class="chart-card-title">Revenue vs Expenses (Monthly)</div>
+    <canvas id="reportChart" height="80"></canvas>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if report_data %}
+<script>
+const labels = [{% for row in report_data %}"{{ row.month|date:'M Y' }}",{% endfor %}];
+const revenue = [{% for row in report_data %}{{ row.revenue|floatformat:"0" }},{% endfor %}];
+const expenses = [{% for row in report_data %}{{ row.expenses|floatformat:"0" }},{% endfor %}];
+const profit = [{% for row in report_data %}{{ row.profit|floatformat:"0" }},{% endfor %}];
+
+new Chart(document.getElementById('reportChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Revenue', data: revenue, backgroundColor: 'rgba(39,174,96,0.7)', borderColor: '#27ae60', borderWidth: 1 },
+            { label: 'Expenses', data: expenses, backgroundColor: 'rgba(231,76,60,0.7)', borderColor: '#e74c3c', borderWidth: 1 },
+            { label: 'Net Profit', data: profit, type: 'line', borderColor: '#C9A96E', backgroundColor: 'rgba(201,169,110,0.1)', borderWidth: 2, pointRadius: 4, tension: 0.3 }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { font: { family: 'Montserrat', size: 11 } } } },
+        scales: {
+            y: { ticks: { callback: v => '₹' + v.toLocaleString('en-IN'), font: { size: 10 } } }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
